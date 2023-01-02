@@ -87,4 +87,8 @@ def encrypt_password(password: str):
     Returns:
         _type_: String encriptada
     """
-    return password
+    f = Fernet(KEY_CRYPT)
+    encoded_pasword = password.encode()
+    encripted_password = f.encrypt(encoded_pasword)
+    decoded_password = encripted_password.decode()
+    return decoded_password
