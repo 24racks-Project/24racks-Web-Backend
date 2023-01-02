@@ -11,6 +11,8 @@ class User(db.Entity):
     password = Required(str, 200)
     email = Required(str, unique=True)
     phone = Optional(str, 13)
+    confirmation_mail = Required(bool)
+    validation_code = Required(str, 6)
     
     saleServices = Set("SaleService", reverse= "user")
     buyService = Set("BuyService")

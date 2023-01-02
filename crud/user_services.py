@@ -7,6 +7,11 @@ from datetime import datetime, timedelta
 from decouple import config
 import random
 
+JWT_SECRET = config("secret")
+JWT_ALGORITHM = config("algorithm")
+JWT_EXPIRES = timedelta(1)
+KEY_CRYPT = config("KEY")
+
 @db_session()
 def add_user(new_user: User_create):
     """Agrega un usuario a la base de datos, devolviendo un
@@ -17,18 +22,46 @@ def add_user(new_user: User_create):
         str: representativa del estado de la salida
     """
     password_encrypted = encrypt_password(new_user.password)
+    code_for_validation = ''.join(
+        random.sample(password_encrypted[7:13], 6)
+        )
+    
     with db_session:
         try:
             User(
                 username=new_user.username,
                 password=password_encrypted,
                 email=new_user.email,
-                phone=new_user.phone
+                phone=new_user.phone,
+                confirmation_mail=False,
+                validation_code=code_for_validation
             )
             commit()
         except Exception as e:
             return str(e)
         return "Usuario agregado con exito"
+
+
+@db_session
+def update_confirmation(username: str, code: str):
+    """Actualiza el valor del atributo que representa que
+    el la cuenta fue confirmada
+    Args:
+        username (str): Usuario confirmado
+        code (str): Codigo de privacidad para la validacion
+    Returns:
+        str: String representativa del estado de la salida
+    """
+    try:
+        user_for_validate = User[username]
+    except Exception as e:
+        return str(e)+" no existe"
+    if (code == user_for_validate.validation_code and user_for_validate.confirmation_mail == False):
+        user_for_validate.confirmation_mail = True
+        return "Usuario confirmado con exito"
+    elif (code == user_for_validate.validation_code and user_for_validate.confirmation_mail == True):
+        return "Intento volver a confirmar"
+    return "El codigo de confirmacion no es valido"
 
 
 @db_session
