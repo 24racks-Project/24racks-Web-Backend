@@ -10,7 +10,6 @@ class User(db.Entity):
     username = PrimaryKey(str, 40)
     password = Required(str, 200)
     email = Required(str, unique=True)
-    phone = Optional(str, 16)
     confirmation_mail = Required(bool)
     validation_code = Required(str, 6)
     
@@ -25,9 +24,7 @@ class SaleService(db.Entity):
     """ 
     __table__="SaleService"
     id_saleService = PrimaryKey(int, auto=True)
-    priceStore = Required(float)
     priceRAM = Required(float)
-    priceVcpu = Required(float)
     logo = Required(str, nullable=False)
     user = Required(User)
 
@@ -43,7 +40,6 @@ class BuyService(db.Entity):
     id_buyService = PrimaryKey(int, auto=True)
     totalStore = Required(float)
     totalRAM = Required(float)
-    totalVcpu = Required(float)
     totalAmount = Required(float)
     date_end = Required(date)
     ip = Required(str, 16)
@@ -58,6 +54,7 @@ class HostingWeb(SaleService):
     relaciones de los servicios en venta (SaleService).
     """
     __table__="HostingWeb"
+    maxStore = Required(float)
     benefit = Required(str, 50)
 
 
@@ -74,9 +71,7 @@ class Offer(db.Entity):
     """
     __table__="Offer"
     id_Offer = PrimaryKey(int, auto=True)
-    offerStore = Required(float)
     offerRAM = Required(float)
-    offerVcpu = Required(float)
     date_start = Required(date)
     date_end = Required(date)
 

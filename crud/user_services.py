@@ -156,4 +156,13 @@ def get_user_from_db(token):
             return res
         except:
             return "token invalido"
-            
+
+def set_user_password(token, newPassword):
+    decode_token = decode_JWT(token)
+    user = decode_token["userID"]
+    with db_session:
+        try:
+            User[user].password = encrypt_password(newPassword)
+            return "contraseña modificada"
+        except:
+            return "token invalido"

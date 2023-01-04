@@ -24,7 +24,6 @@ class User_base(BaseModel):
 
     @validator("password")
     def password_validator(cls, password):
-        print(password)
         if len(password) < 7:
             raise ValueError("La longitud mínima es de 8 caracteres.")
         if len(password) > 50:
@@ -57,3 +56,20 @@ class User_login_schema(BaseModel):
 class User_data_schema(BaseModel):
     username: str
     token: str
+
+class User_new_passsword_schema(BaseModel):
+    token: str
+    currentPassword: str
+    newPassword: str
+
+    @validator("newPassword")
+    def password_validator(cls, password):
+        if len(password) < 7:
+            raise ValueError("La longitud mínima es de 8 caracteres.")
+        if len(password) > 50:
+            raise ValueError("La longitud máxima es de 50 caracteres.")
+        if password.islower():
+            raise ValueError("Debe contener al menos una mayuscula")
+        if not any(c in special_chars for c in password):
+            raise ValueError("Debe contener al menos un caracter especial")
+        return password

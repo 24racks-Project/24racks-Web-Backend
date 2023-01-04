@@ -9,10 +9,11 @@ from crud.user_services import (
     search_user,
     decrypt_password,
     sign_JWT,
-    get_user_from_db
+    get_user_from_db,
+    set_user_password
 )
 
-from schemas.iuser import User_base, User_login_schema, User_data_schema
+from schemas.iuser import User_base, User_login_schema, User_data_schema, User_new_passsword_schema
 import shutil
 from datetime import datetime
 import base64
@@ -165,3 +166,14 @@ async def user_data(credentials: User_data_schema):
     else:
         raise HTTPException(status_code=400,detail="token invalido")
 
+
+@user_end_points.post("/newPassword")
+async def user_data(credentials: User_new_passsword_schema):
+    user = get_user_from_db(credentials.token)
+    if (user != "token invalido"):
+        if (decrypt_password(user.password) == credentials.currentPassword):
+            return set_user_password(credentials.token, credentials.newPassword)
+        else:
+            raise HTTPException(status_code=400,detail="contraseña actual incorrecta")
+    else:
+        raise HTTPException(status_code=400,detail="token invalido")
