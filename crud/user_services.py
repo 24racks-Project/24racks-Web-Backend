@@ -39,6 +39,7 @@ def add_user(new_user: User_create):
             commit()
         except Exception as e:
             return str(e)
+
         return "Usuario agregado con exito"
 
 
@@ -80,6 +81,19 @@ def get_code_for_user(username: str):
         return str(e)+" no existe"
     return code
 
+def decrypt_password(password: str):
+    """Desencripta una contraseña
+    Args:
+        password (str): contraseña a desencriptar
+    Returns:
+        str: contraseña desencriptada
+    """
+    f = Fernet(KEY_CRYPT)
+    encoded_pasword = password.encode()
+    decripted_password = f.decrypt(encoded_pasword)
+    decoded_password = decripted_password.decode()
+    return decoded_password
+
 def encrypt_password(password: str):
     """Realiza un encriptado simetrico a un string haciendo uso de Fernet
     Args:
@@ -92,3 +106,29 @@ def encrypt_password(password: str):
     encripted_password = f.encrypt(encoded_pasword)
     decoded_password = encripted_password.decode()
     return decoded_password
+
+def get_payload(userID: str):
+    """Encodea el token.
+    Args:
+        userID (str): id del usuario.
+    Returns:
+        Dict[str,str]: {"id_usuario":"fecha de expiración"}
+    """
+    payload = {"userID": userID, "expiry": str(datetime.now() + JWT_EXPIRES)}
+    return payload
+
+@db_session()
+def search_user(name):
+    """Busca un usuario en la base de datos por su nombre.
+    Args:
+        name (Any): nombre del usuario a buscar.
+    Returns:
+        Any: ??
+    """
+    data = User.get(username=name)
+    return data
+
+def sign_JWT(userID: str):
+    payload = get_payload(userID)
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return token

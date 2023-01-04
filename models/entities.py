@@ -10,7 +10,7 @@ class User(db.Entity):
     username = PrimaryKey(str, 40)
     password = Required(str, 200)
     email = Required(str, unique=True)
-    phone = Optional(str, 13)
+    phone = Optional(str, 16)
     confirmation_mail = Required(bool)
     validation_code = Required(str, 6)
     

@@ -5,19 +5,27 @@ from decouple import config
 from crud.user_services import (
     add_user,
     get_code_for_user,
-    update_confirmation
+    update_confirmation,
+    search_user,
+    decrypt_password,
+    sign_JWT
 )
 
 from schemas.iuser import User_base, User_login_schema
 import shutil
 from datetime import datetime
 import base64
+import smtplib 
+from email.message import EmailMessage
+
+
 user_end_points = APIRouter()
 
 MAIL_USERNAME_S = config("MAIL_USERNAME")
 MAIL_PASSWORD_S = config("MAIL_PASSWORD")
 MAIL_PORT_S = config("MAIL_PORT")
 MAIL_SERVER_S = config("MAIL_SERVER")
+MAIL = config("MAIL")
 
 async def send_confirmation_mail(
         email: str,
@@ -30,29 +38,23 @@ async def send_confirmation_mail(
         code_validation (str): código a enviar.
         username (str): usuario al que enviar.
     """
-    conf = ConnectionConfig(
-        MAIL_USERNAME=MAIL_USERNAME_S,
-        MAIL_PASSWORD=MAIL_PASSWORD_S,
-        MAIL_FROM=email,
-        MAIL_PORT=MAIL_PORT_S,
-        MAIL_SERVER=MAIL_SERVER_S,
-        MAIL_STARTTLS=True,
-        MAIL_SSL_TLS=False,
-        USE_CREDENTIALS=True,
-    )
+    message = EmailMessage()
+    message['Subject'] = "Mail de confirmación 24racks" 
+    message['From'] = MAIL 
+    message['To'] = email
+    
     html = open("email.html", "r")
-    template = html.read().format(
-        user=username,
-        end_point_verify=code_validation
-        )
-    message = MessageSchema(
-        subject="Mail de confirmación pyRobots",
-        recipients=[email],
-        body=template,
-        subtype="html",
-    )
-    fm = FastMail(conf)
-    await fm.send_message(message)
+    template = html.read().format( user=username, end_point_verify=code_validation, loginPage= "http://localhost:8000/verify?username="+username+"&code="+code_validation )
+
+    message.set_content(template, subtype='html')
+    server = smtplib.SMTP_SSL(MAIL_SERVER_S, MAIL_PORT_S)
+    server.ehlo() 
+    server.set_debuglevel(1)
+    server.login(MAIL, MAIL_PASSWORD_S) 
+    server.send_message(message) 
+    server.quit()
+
+    
 
 
 @user_end_points.post("/register")
@@ -115,5 +117,37 @@ def user_verification(username: str, code: str):
             status_code=400,
             detail=msg
             )
-    response = RedirectResponse(url='http://localhost:3000/home/login')
+    response = RedirectResponse(url='http://localhost:3000/signUp')
     return response
+
+@user_end_points.post("/login")
+async def user_login(credentials: User_login_schema):
+    """Iniciar Sesión.
+    Args:
+        credentials (User_login_schema): credenciales, username y contraseña.
+    Raises:
+        HTTPException: 400: el usuario no existe.
+        HTTPException: 400: contraseña incorrecta.
+        HTTPException: 400: email no verificado.
+    Returns:
+        dict[str:str]: {"token": response}
+    """
+    data = search_user(credentials.username)
+
+    if data is None:
+        raise HTTPException(status_code=400, detail="no existe el usuario")
+    else:
+        pass_decrypt = decrypt_password(data.password)
+        mail_is_verificated = data.confirmation_mail
+        password_is_correct = credentials.password == pass_decrypt
+
+        if not password_is_correct:
+            raise HTTPException( status_code=400, detail="contraseña incorrecta" )
+        elif not mail_is_verificated:
+            raise HTTPException( status_code=400, detail="email no verificado" )
+        else:
+            response = sign_JWT(credentials.username)
+            return {
+                "token": response, 
+                "username": credentials.username
+            }

@@ -52,5 +52,4 @@ class User_create(User_base):
 
 class User_login_schema(BaseModel):
     username: str
-    email: str
     password: str
