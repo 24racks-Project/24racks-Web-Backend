@@ -8,10 +8,11 @@ from crud.user_services import (
     update_confirmation,
     search_user,
     decrypt_password,
-    sign_JWT
+    sign_JWT,
+    get_user_from_db
 )
 
-from schemas.iuser import User_base, User_login_schema
+from schemas.iuser import User_base, User_login_schema, User_data_schema
 import shutil
 from datetime import datetime
 import base64
@@ -151,3 +152,16 @@ async def user_login(credentials: User_login_schema):
                 "token": response, 
                 "username": credentials.username
             }
+
+@user_end_points.post("/dataUser")
+async def user_data(credentials: User_data_schema):
+    user = get_user_from_db(credentials.token)
+    if (user != "token invalido"):        
+        return {
+            "username":user.username,
+            "email":user.email,
+            "phone":user.phone
+        }
+    else:
+        raise HTTPException(status_code=400,detail="token invalido")
+

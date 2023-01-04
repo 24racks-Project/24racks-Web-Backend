@@ -53,3 +53,7 @@ class User_create(User_base):
 class User_login_schema(BaseModel):
     username: str
     password: str
+
+class User_data_schema(BaseModel):
+    username: str
+    token: str

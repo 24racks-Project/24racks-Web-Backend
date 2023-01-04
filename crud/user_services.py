@@ -132,3 +132,28 @@ def sign_JWT(userID: str):
     payload = get_payload(userID)
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token
+
+def decode_JWT(token: str):
+    """Decodea el token
+    Args:
+        token (str): token
+    Returns:
+        Dict[str, Any]: {"userID": "", "expiry": 0}
+    """
+    try:
+        decode_token = jwt.decode(token, JWT_SECRET, algorithms=JWT_ALGORITHM)
+        return decode_token
+    except:
+        return {"userID": "", "expiry": 0}
+
+@db_session
+def get_user_from_db(token):
+    decode_token = decode_JWT(token)
+    user = decode_token["userID"]
+    with db_session:
+        try:
+            res = User[user]
+            return res
+        except:
+            return "token invalido"
+            
