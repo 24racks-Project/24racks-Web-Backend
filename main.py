@@ -7,7 +7,7 @@ app = FastAPI()
 
 
 # Agregando cors urls
-origins = ["http://localhost:3000", "localhost:3000"]
+origins = ['https://shan.loca.lt','https://shan.loca.lt:3000', 'https://shan.loca.lt:3000']
 # Agregando middleware
 app.add_middleware(
     CORSMiddleware,

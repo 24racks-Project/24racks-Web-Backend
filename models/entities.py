@@ -1,4 +1,4 @@
-from pony.orm import PrimaryKey, Required, Optional, Set
+from pony.orm import PrimaryKey, Required, Set
 from db.database import db
 from datetime import date
 
@@ -13,58 +13,61 @@ class User(db.Entity):
     confirmation_mail = Required(bool)
     validation_code = Required(str, 6)
     
-    saleServices = Set("SaleService", reverse= "user")
-    buyService = Set("BuyService")
-    buyOffer = Set("Offer", reverse= "buyUser")
-    saleOffer = Set("Offer", reverse= "saleUser")
+    buyPlans = Set("BuyPlan")
+    buyOffers = Set("Offer", reverse= "buyUsers")
 
-
-class SaleService(db.Entity):
+class ServiceGame(db.Entity):
     """Crea la tabla de servicios en venta.
     """ 
-    __table__="SaleService"
-    id_saleService = PrimaryKey(int, auto=True)
-    priceRAM = Required(float)
+    __table__="Service"
+    id_service = PrimaryKey(int, auto=True)
     logo = Required(str, nullable=False)
-    user = Required(User)
-
-    user = Set("User", reverse= "saleServices")
-    buy = Set("BuyService")
-    offer = Set("Offer", reverse= "service")
-
-
-class BuyService(db.Entity):
-    """Crea la tabla de servicios comprados.
-    """
-    __table__="BuyService"
-    id_buyService = PrimaryKey(int, auto=True)
-    totalStore = Required(float)
-    totalRAM = Required(float)
-    totalAmount = Required(float)
-    date_end = Required(date)
-    ip = Required(str, 16)
+    ip = Required(str, 20)
     port = Required(int)
+    name = Required(str, 40, unique=True)
 
-    user = Required(User)
-    saleService = Required(SaleService)
+    plans = Set("Plan", reverse= "servicesGame")
+    offers = Set("Offer", reverse= "servicesGame")
 
-
-class HostingWeb(SaleService):
-    """Crea la tabla de HostingWeb que hereda los atributos y 
-    relaciones de los servicios en venta (SaleService).
-    """
-    __table__="HostingWeb"
-    maxStore = Required(float)
+class ServiceWeb(db.Entity):
+    """Crea la tabla de servicios en venta.
+    """ 
+    __table__="Service"
+    id_service = PrimaryKey(int, auto=True)
+    logo = Required(str, nullable=False)
+    ip = Required(str, 20)
+    port = Required(int)
     benefit = Required(str, 50)
 
+    plans = Set("Plan", reverse= "servicesWeb")
+    offers = Set("Offer", reverse= "servicesWeb")
 
-class Game(SaleService):
-    """Crea la tabla de juego que hereda los atributos y 
-    relaciones de los servicios en venta (SaleService).
+
+
+class Plan(db.Entity):
+    """Crea la tabla de planes para los servicios ofrecidos.
     """
-    __table__="Game"
-    name = Required(str, 40)
+    __table__="Plan"
+    id_plan = PrimaryKey(int, auto=True)
+    store = Required(str, 10)
+    ram = Required(str, 10)
+    typeRenewal = Required(str, 10)
+    price = Required(float)
+    connection = Required(str, 10)
+    playerSlot = Required(str, 20)
+    backupPerWeek = Required(int)
+    dataTransfer = Required(str, 10)
+    Link = Required(str, 400)
 
+    buyUsers = Set("BuyPlan")
+    servicesWeb = Set("ServiceWeb", reverse= "plans")
+    servicesGame = Set("ServiceGame", reverse= "plans")
+
+class BuyPlan(db.Entity):
+    __table__="BuyPlan"
+    id_buyPlan = PrimaryKey(int, auto= True)
+    user = Required(User)
+    plan = Required(Plan)
 
 class Offer(db.Entity):
     """Crea la tabla de ofertas.
@@ -75,6 +78,6 @@ class Offer(db.Entity):
     date_start = Required(date)
     date_end = Required(date)
 
-    buyUser = Set("User", reverse= "buyOffer")
-    saleUser = Set("User", reverse= "saleOffer")
-    service = Set("SaleService", reverse= "offer")
+    buyUsers = Set("User", reverse= "buyOffers")
+    servicesWeb = Set("ServiceWeb", reverse= "offers")
+    servicesGame = Set("ServiceGame", reverse= "offers")

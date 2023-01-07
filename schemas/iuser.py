@@ -10,7 +10,6 @@ class User_base(BaseModel):
     username: str
     password: str
     email: str
-    phone: str
 
     @validator("username")
     def username_validator(cls, username):
