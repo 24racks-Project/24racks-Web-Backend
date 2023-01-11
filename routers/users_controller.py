@@ -9,18 +9,15 @@ from crud.user_services import (
     decrypt_password,
     sign_JWT,
     get_user_from_db,
-    set_user_password,
-    get_games_and_plans_from_db,
-    get_plan_from_db
+    set_user_password
 )
 
 from schemas.iuser import User_base, User_login_schema, User_data_schema, User_new_passsword_schema
-from schemas.iPlan import Buy_plan_schema
 import smtplib 
 from email.message import EmailMessage
-import stripe
 
-url = "https://shan.loca.lt"
+urlFront = "https://tasty-goat-90.loca.lt/"
+urlBack = "https://shan.loca.lt"
 user_end_points = APIRouter()
 
 MAIL_USERNAME_S = config("MAIL_USERNAME")
@@ -47,7 +44,7 @@ async def send_confirmation_mail(
     message['To'] = email
     
     html = open("email.html", "r")
-    template = html.read().format( user=username, end_point_verify=code_validation, loginPage= "{url}/verify?username="+username+"&code="+code_validation )
+    template = html.read().format( user=username, end_point_verify=code_validation, loginPage= urlBack+"/verify?username="+username+"&code="+code_validation )
 
     message.set_content(template, subtype='html')
     server = smtplib.SMTP_SSL(MAIL_SERVER_S, MAIL_PORT_S)
@@ -120,7 +117,7 @@ def user_verification(username: str, code: str):
             status_code=400,
             detail=msg
             )
-    response = RedirectResponse(url='{url}/signUp')
+    response = RedirectResponse(url= urlFront+'/signUp')
     return response
 
 @user_end_points.post("/login")
@@ -178,37 +175,3 @@ async def user_data(credentials: User_new_passsword_schema):
             raise HTTPException(status_code=400,detail="contraseña actual incorrecta")
     else:
         raise HTTPException(status_code=400,detail="token invalido")
-
-@user_end_points.get("/gamesServer")
-async def get_gamesServer():
-    return {"games": get_games_and_plans_from_db()}
-
-@user_end_points.post("/buyService")
-async def buy_service(credentials: Buy_plan_schema):
-    user = get_user_from_db(credentials.token)
-    if (user != "token invalido"):
-        try:
-            plan = get_plan_from_db(credentials.id_plan)
-            if (plan != "invalid plan"):
-                stripe.api_key= API_KEY
-                checkout_session = stripe.checkout.Session.create(
-                    line_items = [
-                        {
-                            'price': plan.Link,
-                            'quantity': 1
-                        }
-                    ],
-                    mode="subscription",
-                    success_url= url,
-                    cancel_url= url
-                )
-
-                return { "redirect": checkout_session.url}
-            else:
-                return HTTPException(status_code=400,detail="invalid plan")
-
-        except Exception as e:
-            return HTTPException(status_code=400,detail="invalid plan")
-    else:
-        raise HTTPException(status_code=400,detail="token invalido")
-

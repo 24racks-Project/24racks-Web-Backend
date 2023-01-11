@@ -6,20 +6,21 @@ from datetime import date
 class User(db.Entity):
     """Crea la tabla de usuarios.
     """
-    __table__ = "users"
+    __table__ = "User"
     username = PrimaryKey(str, 40)
     password = Required(str, 200)
     email = Required(str, unique=True)
     confirmation_mail = Required(bool)
     validation_code = Required(str, 6)
     
-    buyPlans = Set("BuyPlan")
+    buyPlansGame = Set("BuyPlanGame")
+    buyPlansWeb = Set("BuyPlanWeb")
     buyOffers = Set("Offer", reverse= "buyUsers")
 
 class ServiceGame(db.Entity):
     """Crea la tabla de servicios en venta.
     """ 
-    __table__="Service"
+    __table__="ServiceGame"
     id_service = PrimaryKey(int, auto=True)
     logo = Required(str, nullable=False)
     ip = Required(str, 20)
@@ -28,11 +29,12 @@ class ServiceGame(db.Entity):
 
     plans = Set("Plan", reverse= "servicesGame")
     offers = Set("Offer", reverse= "servicesGame")
+    buyPlansGame = Set("BuyPlanGame")
 
 class ServiceWeb(db.Entity):
     """Crea la tabla de servicios en venta.
     """ 
-    __table__="Service"
+    __table__="ServiceWeb"
     id_service = PrimaryKey(int, auto=True)
     logo = Required(str, nullable=False)
     ip = Required(str, 20)
@@ -41,8 +43,7 @@ class ServiceWeb(db.Entity):
 
     plans = Set("Plan", reverse= "servicesWeb")
     offers = Set("Offer", reverse= "servicesWeb")
-
-
+    buyPlansWeb = Set("BuyPlanWeb")
 
 class Plan(db.Entity):
     """Crea la tabla de planes para los servicios ofrecidos.
@@ -59,14 +60,23 @@ class Plan(db.Entity):
     dataTransfer = Required(str, 10)
     Link = Required(str, 400)
 
-    buyUsers = Set("BuyPlan")
+    buyUsersGame = Set("BuyPlanGame")
+    buyUsersWeb = Set("BuyPlanWeb")
     servicesWeb = Set("ServiceWeb", reverse= "plans")
     servicesGame = Set("ServiceGame", reverse= "plans")
 
-class BuyPlan(db.Entity):
-    __table__="BuyPlan"
-    id_buyPlan = PrimaryKey(int, auto= True)
+class BuyPlanGame(db.Entity):
+    __table__="BuyPlanGame"
+    id_transaction = PrimaryKey(str, 100)
     user = Required(User)
+    serviceGame = Required(ServiceGame)
+    plan = Required(Plan)
+
+class BuyPlanWeb(db.Entity):
+    __table__="BuyPlanWeb"
+    id_transaction = PrimaryKey(str, 100)
+    user = Required(User)
+    serviceWeb = Required(ServiceWeb)
     plan = Required(Plan)
 
 class Offer(db.Entity):

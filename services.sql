@@ -1,6 +1,6 @@
 -- SQLite
-INSERT INTO User (username, password, email, confirmation_mail, validation_code) VALUES ();
-
+INSERT INTO User (username, password, email, confirmation_mail, validation_code)
+VALUES ("Alexis", "gAAAAABjugxtBbtGgS1h9q83lLBD62TwE0rzgsHym01sTllnEuqqsI7vdR-j_1jIn6nWkYX41Ka1EP7oeXSbhO0eGF4NFhSL6A==", "alexis.centeno@mi.unc.edu.ar", 1, "gjuxBt");
 INSERT INTO ServiceGame (id_service, logo, ip, port, name) VALUES (0, "", "localhost", 3000, "Minecraft");
 INSERT INTO ServiceGame (id_service, logo, ip, port, name) VALUES (1, "", "localhost", 3000, "Rust ");
 INSERT INTO ServiceGame (id_service, logo, ip, port, name) VALUES (2, "", "localhost", 3000, "Terraria ");

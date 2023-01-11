@@ -1,12 +1,11 @@
-from models.entities import User, ServiceGame, Plan
-from pony.orm import db_session, commit, select
+from models.entities import User
+from pony.orm import db_session, commit
 from schemas.iuser import User_create
 from cryptography.fernet import Fernet
 import jwt
 from datetime import datetime, timedelta
 from decouple import config
 import random
-import json
 
 JWT_SECRET = config("secret")
 JWT_ALGORITHM = config("algorithm")
@@ -41,7 +40,6 @@ def add_user(new_user: User_create):
             return str(e)
 
         return "Usuario agregado con exito"
-
 
 @db_session
 def update_confirmation(username: str, code: str):
@@ -118,7 +116,7 @@ def get_payload(userID: str):
     return payload
 
 @db_session()
-def search_user(name):
+def search_user(name: str):
     """Busca un usuario en la base de datos por su nombre.
     Args:
         name (Any): nombre del usuario a buscar.
@@ -147,7 +145,7 @@ def decode_JWT(token: str):
         return {"userID": "", "expiry": 0}
 
 @db_session
-def get_user_from_db(token):
+def get_user_from_db(token: str):
     decode_token = decode_JWT(token)
     user = decode_token["userID"]
     with db_session:
@@ -158,7 +156,7 @@ def get_user_from_db(token):
             return "token invalido"
 
 @db_session
-def set_user_password(token, newPassword):
+def set_user_password(token: str, newPassword: str):
     decode_token = decode_JWT(token)
     user = decode_token["userID"]
     with db_session:
@@ -167,44 +165,3 @@ def set_user_password(token, newPassword):
             return "contraseña modificada"
         except:
             return "token invalido"
-
-@db_session
-def get_games_and_plans_from_db():
-    data = {'games': []}
-    data['games'] = []
-    games = select((sg.name, sg.id_service) for sg in ServiceGame)
-    for (nameGame, id_service) in games:
-        data['games'].append({
-            'name': nameGame,
-            'id_service': id_service,
-            'plans': []
-        })
-
-    plansxgames = select((sg.name, sg.id_service, sg.plans) for sg in ServiceGame)
-    for (nameGame, id_service, plan) in plansxgames:
-        index = -1
-        for i in range(len(data["games"])):
-            index = i if (data["games"][i]["id_service"] == id_service) else index
-            
-        data["games"][index]['plans'].append({
-            'id_plan': plan.id_plan,
-            'store': plan.store,
-            'ram': plan.ram,
-            'typeRenewal': plan.typeRenewal,
-            'price': plan.price,
-            'connection': plan.connection,
-            'playerSlot': plan.playerSlot,
-            'backupPerWeek': plan.backupPerWeek,
-            'dataTransfer': plan.dataTransfer
-        })
-
-    return data["games"]
-
-@db_session
-def get_plan_from_db(idd_plan):
-    with db_session:
-        try:
-            res = Plan.get(id_plan=idd_plan)
-            return res
-        except:
-            return "Invalid plan"
