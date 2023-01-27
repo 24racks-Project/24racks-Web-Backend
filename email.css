@@ -1,0 +1,67 @@
+.body {
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.message {
+    width: 100%; 
+    background: rgb(75, 115, 151); 
+    padding: 10px;
+}
+
+.message > .body {
+    margin: 0 auto; 
+    width: 90%; 
+    text-align: center;
+}
+
+.message > .body > h1 {
+    background-color: rgba(0, 53, 102, 1); 
+    padding: 5px 10px; 
+    border-radius: 2px; 
+    color: white;
+} 
+
+.message > .body > div {
+    margin: 30px auto; 
+    background: white; 
+    width: 40%; 
+    border-radius: 2px; 
+    padding: 50px; 
+    text-align: center;
+}
+
+.message > .body > div > h3 {
+    background-color: rgb(39, 68, 95);
+    color: white; 
+    margin-bottom: 10px; 
+    font-size: 24px;
+    margin-left: 50px;
+    margin-right: 50px;
+    border-radius: 2px; 
+}
+
+.message > .body > div > p {
+    margin-bottom: 30px;
+}
+
+.message > .body > div > a {
+    display: block; 
+    margin: 0 auto; 
+    border: none; 
+    background-color: rgba(0, 53, 102, 1); 
+    color: white; 
+    width: 200px; 
+    line-height: 24px; 
+    padding: 10px; 
+    font-size: 24px; 
+    border-radius: 2px; 
+    cursor: pointer; 
+    text-decoration: none;
+}
+
+.message > .body > div > a:hover{
+    background-color: rgb(6, 21, 35); 
+}
